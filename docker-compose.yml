@@ -1,0 +1,11 @@
+services:
+  dmiot2mqtt:
+    container_name: dmiot2mqtt
+    image: ghcr.io/rapejim/dmiot2mqtt:latest
+    network_mode: bridge
+    ports:
+      - "31270:31270"
+    volumes:
+      - /docker/dmiot2mqtt/config:/config
+    ## Uncomment for active DEBUG log
+    # command: ["dmiot2mqtt.py", "-c", "/config/dmiot2mqtt.ini", "-l", "DEBUG"]
