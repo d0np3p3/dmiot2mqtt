@@ -33,7 +33,7 @@ except ImportError:
 HOST = '0.0.0.0'
 PORT = 31270
 
-logger = logging.getLogger("main")
+logger = logging.getLogger("dmoit2mqtt")
 
 
 class DreamMakerIotClient:
@@ -52,7 +52,7 @@ class DreamMakerIotClient:
         2: "smart"
     }
     
-    def __init__(self, stream_reader, stream_writer):
+    def __init__(self, stream_reader: asyncio.StreamReader, stream_writer: asyncio.StreamWriter):
         addr = stream_writer.get_extra_info('peername')
         logger.info(f"Client {addr!r} connected.")
         self.client_ip = addr[0]
@@ -226,7 +226,7 @@ class MqttConfig:
         return MQTTClient(config=config)
         
 
-async def client_connected_callback(reader, writer):
+async def client_connected_callback(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     dreammakeriotclient = DreamMakerIotClient(reader, writer)
     await dreammakeriotclient.async_run()
     await dreammakeriotclient.async_stop()
@@ -236,7 +236,7 @@ async def main():
     server = await asyncio.start_server(client_connected_callback, HOST, PORT)
     
     addr = server.sockets[0].getsockname()
-    print(f'Serving on {addr[0]}:{addr[1]}')
+    logger.info(f'Serving on {addr[0]}:{addr[1]}')
 
     async with server:
         await server.serve_forever()
@@ -260,7 +260,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Set up logging
-    logger.addHandler(logging.StreamHandler())
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('[%(name)-10s] %(levelname)-8s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
     logger.setLevel(args.loglevel)
     
     # Read config and store it in global class scope
