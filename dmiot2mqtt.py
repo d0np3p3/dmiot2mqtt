@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import sys
+import uuid
 
 try:
     from amqtt.client import MQTTClient
@@ -55,6 +56,7 @@ class DreamMakerIotClient:
     def __init__(self, stream_reader: asyncio.StreamReader, stream_writer: asyncio.StreamWriter):
         addr = stream_writer.get_extra_info('peername')
         logger.info(f"Client {addr!r} connected.")
+        self.device_id = '000000000000000000000000'
         self.client_ip = addr[0]
         self.stream_reader = stream_reader
         self.stream_writer = stream_writer
@@ -73,7 +75,8 @@ class DreamMakerIotClient:
                 await self.async_send_provisioning_data()
             # Auth request
             elif message["action"] == 1 and message["resource_id"] == 2001:
-                logger.info("Auth handshake")
+                self.device_id = message['data']['device_id']
+                logger.info(f"Auth handshake for Device ID: {self.device_id}")
                 logger.debug(message)
                 await self.async_ack_message(message)
                 return True
@@ -116,8 +119,7 @@ class DreamMakerIotClient:
         response = copy.copy(self.REPLY_TEMPLATE)
         response["resource_id"] = 2000
         response["action"] = 81
-        # Just add a dummy device_key/device_id. We won't need this information later.
-        response["data"] = {"device_key":"0000000000000000", "device_id":"000000000000000000000000"}
+        response["data"] = {"device_key": uuid.uuid4().hex[:16], "device_id": uuid.uuid4().hex[:24]}
         await self.async_send_data(response)
         
     async def async_run(self):
