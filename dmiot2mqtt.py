@@ -78,6 +78,7 @@ class DreamMakerIotClient:
                 self.device_id = message['data']['device_id']
                 logger.info(f"Auth handshake for Device ID: {self.device_id}")
                 logger.debug(message)
+                if MqttConfig.home_assistant_mqtt_discovery: await self.async_discovery_registry()
                 await self.async_ack_message(message)
                 return True
         return False
@@ -114,6 +115,28 @@ class DreamMakerIotClient:
         response = copy.copy(self.REPLY_TEMPLATE)
         response["resource_id"] = message["resource_id"]
         await self.async_send_data(response)
+        
+    async def async_discovery_registry(self):
+        """
+        Construct an send initial mqtt discovery messages.
+        """
+        discovery_json_text = open('discovery.json', "r").read().replace("<DEVICE_ID>", self.device_id)
+        discovery_json_dict = json.loads(discovery_json_text)
+        # connect to mqtt broker
+        mqtt_client = MqttConfig.get_client()
+        await mqtt_client.connect(MqttConfig.get_uri())
+        # loop discovery info to registry every entity
+        for entity_type, entities in discovery_json_dict.items():
+            for config in entities:
+                mqtt_topic = os.path.join(MqttConfig.discovery_topic, entity_type, self.device_id.lower(), config['unique_id'].replace(f"{self.device_id}_", ""), 'config')
+                # publish message over mqtt
+                await mqtt_client.publish(mqtt_topic, json.dumps(config).encode(), retain = True)
+                log_msg = f"Entity '{entity_type}' of '{self.device_id}' registered"
+                if logger.level != getattr(logging, 'DEBUG'.upper()):
+                    logger.info(log_msg)
+                else:
+                    logger.debug(f"{log_msg} on topic '{mqtt_topic}'")
+        await mqtt_client.disconnect()
     
     async def async_send_provisioning_data(self):
         response = copy.copy(self.REPLY_TEMPLATE)
@@ -185,6 +208,8 @@ class MqttConfig:
     user = None
     password = None
     use_ssl = False
+    home_assistant_mqtt_discovery = True
+    discovery_topic = "homeassistant"
     retain = False
     
     @classmethod
@@ -220,13 +245,15 @@ class MqttConfig:
         cls.user = config["mqtt"].get("user", None)
         cls.password = config["mqtt"].get("password", None)
         cls.use_ssl = config["mqtt"].getboolean("use_ssl", False)
+        cls.home_assistant_mqtt_discovery = config["mqtt"].getboolean("home_assistant_mqtt_discovery", True)
+        cls.discovery_topic = config["mqtt"].get("discovery_topic", cls.discovery_topic)
         cls.retain = config["mqtt"].getboolean("retain", False)
     
     @classmethod
     def get_client(cls) -> MQTTClient:
         config = {"default_retain": cls.retain}
         return MQTTClient(config=config)
-        
+
 
 async def client_connected_callback(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     dreammakeriotclient = DreamMakerIotClient(reader, writer)
@@ -245,7 +272,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    
+
     def argparse_type_loglevel(level):
         """
         Type check for log level.

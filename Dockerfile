@@ -7,6 +7,7 @@ WORKDIR /app
 # Copiar ficheros al contenedor
 COPY requirements.txt .
 COPY dmiot2mqtt.py .
+COPY discovery.json .
 
 # Instalar las dependencias
 RUN pip install --no-cache-dir -r requirements.txt
