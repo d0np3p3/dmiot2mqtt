@@ -131,7 +131,7 @@ class DreamMakerIotClient:
         if not await self.async_authenticate_client():
             return False
         
-        mqtt_base = os.path.join(MqttConfig.base_topic, self.client_ip.lower())
+        mqtt_base = os.path.join(MqttConfig.base_topic, self.device_id.lower())
         mqtt_topic = mqtt_base
         mqtt_command_topic = os.path.join(mqtt_base, "command")
         
