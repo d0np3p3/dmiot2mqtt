@@ -296,7 +296,7 @@ if __name__ == "__main__":
     
     # Set up logging
     handler = logging.StreamHandler()
-    formatter = logging.Formatter('[%(name)-10s] %(levelname)-8s %(message)s')
+    formatter = logging.Formatter('%(asctime)s - [%(name)-10s] %(levelname)-8s %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(args.loglevel)
