@@ -42,7 +42,7 @@ NOTE: If you need debug logs, add `-l DEBUG` to de run command:
 ## Home Assistant integration
 
 Once you have your fan talking to dmiot2mqtt, the fan device (and entities) are registered auto with discovey into Home Assistant.
-If you want use manual config, this is an example, just adjust the MQTT topic names according to your fan's Device ID (view it on log when fan connect to dmiot2mqtt):
+If you want use manual config, this is an example, just adjust the MQTT topic names according to your fan's `<DEVICE_ID>` and de model of device replacing `<DEVICE_KEY>` for your model (view both on log when fan connect to dmiot2mqtt `[dmoit2mqtt] INFO     Auth handshake for Device Key 'DM-FAN02-W' with Device ID '1a2b3c4d5e6f1a2b3c4d5e6f'`):
 
 ```yaml
 mqtt:
@@ -50,7 +50,7 @@ mqtt:
       device:
         name: "DreamMaker Fan"
         manufacturer: "DreamMaker"
-        model: "DM-FAN02-W"
+        model: "<DEVICE_KEY>"
         identifiers: "<DEVICE_ID>"
       name: "DreamMaker Fan"
       unique_id: "<DEVICE_ID>_fan"
@@ -83,7 +83,7 @@ mqtt:
       device:
         name: "DreamMaker Fan"
         manufacturer: "DreamMaker"
-        model: "DM-FAN02-W"
+        model: "<DEVICE_KEY>"
         identifiers: "<DEVICE_ID>"
       name: "Lights"
       unique_id: <DEVICE_ID>_lights
@@ -97,7 +97,7 @@ mqtt:
       device:
         name: "DreamMaker Fan"
         manufacturer: "DreamMaker"
-        model: "DM-FAN02-W"
+        model: "<DEVICE_KEY>"
         identifiers: "<DEVICE_ID>"
       name: "Child Lock",
       icon: "mdi:lock-open-outline",
@@ -114,7 +114,7 @@ mqtt:
       device:
         name: "DreamMaker Fan"
         manufacturer: "DreamMaker"
-        model: "DM-FAN02-W"
+        model: "<DEVICE_KEY>"
         identifiers: "<DEVICE_ID>"
       name: "Countdown"
       icon: "mdi:fan-clock"
@@ -131,7 +131,7 @@ mqtt:
       device:
         name: "DreamMaker Fan"
         manufacturer: "DreamMaker"
-        model: "DM-FAN02-W"
+        model: "<DEVICE_KEY>"
         identifiers: "<DEVICE_ID>"
       name: " Roll Angle"
       icon: "mdi:arrow-oscillating"
@@ -168,7 +168,7 @@ mqtt:
       - device:
           name: "DreamMaker Fan"
           manufacturer: "DreamMaker"
-          model: "DM-FAN02-W"
+          model: "<DEVICE_KEY>"
           identifiers: "<DEVICE_ID>"
         name: "Sounds"
         icon: "mdi:volume-high"

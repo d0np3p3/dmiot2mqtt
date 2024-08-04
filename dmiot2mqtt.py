@@ -57,6 +57,7 @@ class DreamMakerIotClient:
         addr = stream_writer.get_extra_info('peername')
         logger.info(f"Client {addr!r} connected.")
         self.device_id = '000000000000000000000000'
+        self.device_key = '0000000000000000'
         self.client_ip = addr[0]
         self.stream_reader = stream_reader
         self.stream_writer = stream_writer
@@ -72,11 +73,12 @@ class DreamMakerIotClient:
             if message["action"] == 1 and message["resource_id"] == 2000:
                 logger.info("Received provisioning request, sending data...")
                 logger.debug(message)
-                await self.async_send_provisioning_data()
+                await self.async_send_provisioning_data(message)
             # Auth request
             elif message["action"] == 1 and message["resource_id"] == 2001:
                 self.device_id = message['data']['device_id']
-                logger.info(f"Auth handshake for Device ID: {self.device_id}")
+                self.device_key = message['data']['device_key']
+                logger.info(f"Auth handshake for Device Key '{self.device_key}' with Device ID '{self.device_id}'")
                 logger.debug(message)
                 if MqttConfig.home_assistant_mqtt_discovery: await self.async_discovery_registry()
                 await self.async_ack_message(message)
@@ -120,7 +122,12 @@ class DreamMakerIotClient:
         """
         Construct an send initial mqtt discovery messages.
         """
-        discovery_json_text = open('discovery.json', "r").read().replace("<DEVICE_ID>", self.device_id)
+        discovery_json_text = open('discovery.json', "r").read()
+        discovery_json_text = discovery_json_text.replace("<DEVICE_ID>", self.device_id)
+        if "DM-" in self.device_key:
+            discovery_json_text = discovery_json_text.replace("<DEVICE_KEY>", self.device_key)
+        else:
+            discovery_json_text = discovery_json_text.replace("<DEVICE_KEY>", "DreamMaker device")
         discovery_json_dict = json.loads(discovery_json_text)
         # connect to mqtt broker
         mqtt_client = MqttConfig.get_client()
@@ -138,11 +145,13 @@ class DreamMakerIotClient:
                     logger.debug(f"{log_msg} on topic '{mqtt_topic}'")
         await mqtt_client.disconnect()
     
-    async def async_send_provisioning_data(self):
         response = copy.copy(self.REPLY_TEMPLATE)
+    async def async_send_provisioning_data(self, incoming_msg: dict):
+        new_device_id = uuid.uuid4().hex[:24]
+        new_device_key = f"DM-{incoming_msg['data']['product_model'].upper()}"
         response["resource_id"] = 2000
         response["action"] = 81
-        response["data"] = {"device_key": uuid.uuid4().hex[:16], "device_id": uuid.uuid4().hex[:24]}
+        response["data"] = {"device_key": new_device_key, "device_id": new_device_id}
         await self.async_send_data(response)
         
     async def async_run(self):
@@ -184,7 +193,7 @@ class DreamMakerIotClient:
                         continue
                     data = message["data"]
                     # publish message over mqtt
-                    await self.mqtt_client.publish(mqtt_topic, json.dumps(data).encode())
+                    await self.mqtt_client.publish(mqtt_base, json.dumps(data).encode())
             
             if mqtt_task in done:
                 message = mqtt_task.result()

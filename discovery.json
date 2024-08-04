@@ -4,10 +4,10 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
-            "name": "Fan",
+            "name": null,
             "unique_id": "<DEVICE_ID>_fan",
             "command_topic": "dmiot2mqtt/<DEVICE_ID>/command",
             "command_template": "{ \"power\": {{ value }} }",
@@ -42,7 +42,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": "Lights",
@@ -60,7 +60,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": "Child Lock",
@@ -81,7 +81,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": "Countdown",
@@ -102,7 +102,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": " Roll Angle",
@@ -126,7 +126,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": "Temperature",
@@ -141,7 +141,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": "Humidity",
@@ -157,7 +157,7 @@
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
-                "model": "DM-FAN02-W",
+                "model": "<DEVICE_KEY>",
                 "identifiers": "<DEVICE_ID>"
             },
             "name": "Sounds",
