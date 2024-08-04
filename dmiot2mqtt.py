@@ -17,18 +17,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import asyncio
 import configparser
-import copy
 import json
 import logging
-import os
-import sys
+from os import path as path_joiner
 import uuid
 
 try:
     from amqtt.client import MQTTClient
     from amqtt.mqtt.constants import QOS_0
 except ImportError:
-    sys.exit("amqtt library is missing, quitting...")
+    exit("amqtt library is missing, quitting...")
     
 
 HOST = '0.0.0.0'
@@ -106,7 +104,7 @@ class DreamMakerIotClient:
         await self.stream_writer.drain()
         
     async def async_send_command(self, command_data: dict):
-        message = copy.copy(self.COMMAND_TEMPLATE)
+        message = self.COMMAND_TEMPLATE.copy()
         message["data"] = command_data
         await self.async_send_data(message)
     
@@ -114,7 +112,7 @@ class DreamMakerIotClient:
         """
         Each incoming message needs to be either ACK'ed or answered properly.
         """
-        response = copy.copy(self.REPLY_TEMPLATE)
+        response = self.REPLY_TEMPLATE.copy()
         response["resource_id"] = message["resource_id"]
         await self.async_send_data(response)
         
@@ -145,8 +143,8 @@ class DreamMakerIotClient:
                     logger.debug(f"{log_msg} on topic '{mqtt_topic}'")
         await mqtt_client.disconnect()
     
-        response = copy.copy(self.REPLY_TEMPLATE)
     async def async_send_provisioning_data(self, incoming_msg: dict):
+        response = self.REPLY_TEMPLATE.copy()
         new_device_id = uuid.uuid4().hex[:24]
         new_device_key = f"DM-{incoming_msg['data']['product_model'].upper()}"
         response["resource_id"] = 2000
@@ -163,9 +161,8 @@ class DreamMakerIotClient:
         if not await self.async_authenticate_client():
             return False
         
-        mqtt_base = os.path.join(MqttConfig.base_topic, self.device_id.lower())
-        mqtt_topic = mqtt_base
-        mqtt_command_topic = os.path.join(mqtt_base, "command")
+        mqtt_base_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower())
+        mqtt_command_topic = path_joiner.join(mqtt_base_topic, "command")
         
         await self.mqtt_client.subscribe([(mqtt_command_topic, QOS_0), ])
         
@@ -193,7 +190,7 @@ class DreamMakerIotClient:
                         continue
                     data = message["data"]
                     # publish message over mqtt
-                    await self.mqtt_client.publish(mqtt_base, json.dumps(data).encode())
+                    await self.mqtt_client.publish(mqtt_base_topic, json.dumps(data).encode())
             
             if mqtt_task in done:
                 message = mqtt_task.result()
