@@ -79,6 +79,7 @@ class DreamMakerIotClient:
                 logger.info(f"Auth handshake for Device Key '{self.device_key}' with Device ID '{self.device_id}'")
                 logger.debug(message)
                 if MqttConfig.home_assistant_mqtt_discovery: await self.async_discovery_registry()
+                await self.async_publish_mqtt_availability(True)
                 await self.async_ack_message(message)
                 return True
         return False
@@ -127,21 +128,24 @@ class DreamMakerIotClient:
         else:
             discovery_json_text = discovery_json_text.replace("<DEVICE_KEY>", "DreamMaker device")
         discovery_json_dict = json.loads(discovery_json_text)
-        # connect to mqtt broker
-        mqtt_client = MqttConfig.get_client()
-        await mqtt_client.connect(MqttConfig.get_uri())
         # loop discovery info to registry every entity
         for entity_type, entities in discovery_json_dict.items():
             for config in entities:
-                mqtt_topic = os.path.join(MqttConfig.discovery_topic, entity_type, self.device_id.lower(), config['unique_id'].replace(f"{self.device_id}_", ""), 'config')
+                entity_short_name = config['unique_id'].replace(f"{self.device_id}_", "")
+                discovery_mqtt_topic = path_joiner.join(MqttConfig.discovery_topic, entity_type, self.device_id.lower(), entity_short_name, 'config')
                 # publish message over mqtt
-                await mqtt_client.publish(mqtt_topic, json.dumps(config).encode(), retain = True)
-                log_msg = f"Entity '{entity_type}' of '{self.device_id}' registered"
+                await self.mqtt_client.publish(discovery_mqtt_topic, json.dumps(config).encode(), retain = True)
+                log_msg = f"Entity '{entity_short_name}' ({entity_type}) of device '{self.device_id}', registered"
                 if logger.level != getattr(logging, 'DEBUG'.upper()):
                     logger.info(log_msg)
                 else:
-                    logger.debug(f"{log_msg} on topic '{mqtt_topic}'")
-        await mqtt_client.disconnect()
+                    logger.debug(f"{log_msg} on topic '{discovery_mqtt_topic}'")
+                    
+    async def async_publish_mqtt_availability(self, online: bool):
+        mqtt_availability_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower(), "availability")
+        data = {"state": "online" if online else "offline"}
+        logger.debug(f"Sending MQTT available '{data['state']}' to topic: {mqtt_availability_topic}")
+        await self.mqtt_client.publish(mqtt_availability_topic, json.dumps(data).encode())
     
     async def async_send_provisioning_data(self, incoming_msg: dict):
         response = self.REPLY_TEMPLATE.copy()
@@ -190,6 +194,7 @@ class DreamMakerIotClient:
                         continue
                     data = message["data"]
                     # publish message over mqtt
+                    await self.async_publish_mqtt_availability(True)
                     await self.mqtt_client.publish(mqtt_base_topic, json.dumps(data).encode())
             
             if mqtt_task in done:
@@ -204,6 +209,7 @@ class DreamMakerIotClient:
     async def async_stop(self):
         logger.info("Quit....")
         self.stream_writer.close()
+        await self.async_publish_mqtt_availability(False)
         await self.mqtt_client.disconnect()
 
 

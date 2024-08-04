@@ -1,6 +1,13 @@
 {
     "fan": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -39,6 +46,13 @@
     ],
     "light": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -57,6 +71,13 @@
     ],
     "lock": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -78,6 +99,13 @@
     ],
     "number": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -99,6 +127,13 @@
     ],
     "select": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -123,6 +158,13 @@
     ],
     "sensor": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -138,6 +180,13 @@
             "value_template": "{{ value_json.temperature }}"
         },
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
@@ -154,6 +203,13 @@
     ],
     "switch": [
         {
+            "availability": [
+                {
+                    "topic": "dmiot2mqtt/<DEVICE_ID>/availability",
+                    "value_template": "{{ value_json.state }}"
+                }
+            ],
+            "availability_mode": "all",
             "device": {
                 "name": "DreamMaker Fan",
                 "manufacturer": "DreamMaker",
