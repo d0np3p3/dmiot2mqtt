@@ -1,2 +1,1 @@
-amqtt==0.11.0b1
-setuptools
+aiomqtt>=2.2.0
