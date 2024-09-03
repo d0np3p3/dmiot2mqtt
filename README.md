@@ -146,6 +146,7 @@ mqtt:
         - "60"
         - "90"
         - "120"
+        - "140"
   - sensor:
       - device:
           identifiers: "<DEVICE_ID>"
