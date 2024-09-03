@@ -23,11 +23,8 @@ from os import path as path_joiner
 import uuid
 
 try:
-    # from amqtt.client import MQTTClient
-    # from amqtt.mqtt.constants import QOS_0
     import aiomqtt
 except ImportError:
-    # exit("amqtt library is missing, quitting...")
     exit("aiomqtt library is missing, quitting...")
     
 
@@ -136,7 +133,6 @@ class DreamMakerIotClient:
                 entity_short_name = config['unique_id'].replace(f"{self.device_id}_", "")
                 discovery_mqtt_topic = path_joiner.join(MqttConfig.discovery_topic, entity_type, self.device_id.lower(), entity_short_name, 'config')
                 # publish message over mqtt
-                # await self.mqtt_client.publish(discovery_mqtt_topic, json.dumps(config).encode(), retain = True)
                 async with aiomqtt.Client(**MqttConfig.get_mqtt_client_kwargs()) as mqtt_client:
                     await mqtt_client.publish(discovery_mqtt_topic, payload=json.dumps(config).encode(), retain = True)
                 log_msg = f"Entity '{entity_short_name}' ({entity_type}) of device '{self.device_id}', registered"
@@ -145,12 +141,7 @@ class DreamMakerIotClient:
                 else:
                     logger.debug(f"{log_msg} on topic '{discovery_mqtt_topic}'")
                     
-    async def async_publish_mqtt_availability(self, online: bool):
-        # mqtt_availability_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower(), "availability")
-        # data = {"state": "online" if online else "offline"}
-        # logger.debug(f"Sending MQTT available '{data['state']}' to topic: {mqtt_availability_topic}")
-        # await self.mqtt_client.publish(mqtt_availability_topic, json.dumps(data).encode())
-        
+    async def async_publish_mqtt_availability(self, online: bool):        
         async with aiomqtt.Client(**MqttConfig.get_mqtt_client_kwargs()) as mqtt_client:
             mqtt_availability_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower(), "availability")
             data = {"state": "online" if online else "offline"}
@@ -168,8 +159,6 @@ class DreamMakerIotClient:
         
     async def async_mqtt_listen(self):
         async with aiomqtt.Client(**MqttConfig.get_mqtt_client_kwargs()) as mqtt_client:
-            logger.debug("in with mqtt")
-            
             mqtt_base_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower())
             mqtt_command_topic = path_joiner.join(mqtt_base_topic, "command")
 
@@ -185,16 +174,9 @@ class DreamMakerIotClient:
     async def async_run(self):
         """
         Main entry point for a new client connection.
-        """
-        # await self.mqtt_client.connect(MqttConfig.get_uri())
-        
+        """        
         if not await self.async_authenticate_client():
             return False
-        
-        # mqtt_base_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower())
-        # mqtt_command_topic = path_joiner.join(mqtt_base_topic, "command")
-        
-        # await self.mqtt_client.subscribe([(mqtt_command_topic, QOS_0), ])
         
         # Schedule two tasks, once one of them completes we need to take action
         tcp_task = asyncio.create_task(self.async_get_data())
@@ -223,29 +205,19 @@ class DreamMakerIotClient:
                     data = message["data"]
                     # publish message over mqtt
                     await self.async_publish_mqtt_availability(True)
-                    # await self.mqtt_client.publish(mqtt_base_topic, json.dumps(data).encode())
                     async with aiomqtt.Client(**MqttConfig.get_mqtt_client_kwargs()) as mqtt_client:
-                        logger.debug("mqtt publish")
-                        
                         mqtt_base_topic = path_joiner.join(MqttConfig.base_topic, self.device_id.lower())
                         await mqtt_client.publish(mqtt_base_topic, payload=json.dumps(data).encode())
             
             if mqtt_task in done:
                 logger.debug("MQTT task done, rescheduling....")
                 message = mqtt_task.result()
-                # Make sure to create a new MQTT subscriber task first
-                # mqtt_task = asyncio.create_task(self.mqtt_client.deliver_message())
-                # packet = message.publish_packet
-                # logger.debug("Received command {}".format(packet.payload.data.decode()))
-                # command = json.loads(packet.payload.data.decode())
-                # await self.async_send_command(command)
                 mqtt_task = asyncio.create_task(self.async_mqtt_listen())
         
     async def async_stop(self):
         logger.info("Quit....")
         self.stream_writer.close()
         await self.async_publish_mqtt_availability(False)
-        # await self.mqtt_client.disconnect()
 
 
 class MqttConfig:
@@ -297,9 +269,6 @@ class MqttConfig:
         cls.retain = config["mqtt"].getboolean("retain", False)
     
     @classmethod
-    # def get_client(cls) -> MQTTClient:
-    #     config = {"default_retain": cls.retain}
-    #     return MQTTClient(config=config)
     def get_mqtt_client_kwargs(cls) -> dict:
         return {
             'hostname': cls.server,
