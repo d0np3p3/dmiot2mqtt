@@ -91,11 +91,13 @@ class DreamMakerIotClient:
          if not data:
              return {}
          else:
-             try:
-                 return json.loads(data.decode())
-             except json.decoder.JSONDecodeError:
-                 logger.warning("Invalid JSON received, ignoring...")
-                 return {}
+            try:
+                # Decode the data and remove any backslashes that might interfere with JSON parsing
+                cleaned_data = data.decode('utf-8').replace("\\", "")
+                return json.loads(cleaned_data)
+            except json.decoder.JSONDecodeError as e:
+                logger.error(f"Invalid JSON received, ignoring...: {e}")
+                return {}
     
     async def async_send_data(self, data: dict):
         message = json.dumps(data).encode()
